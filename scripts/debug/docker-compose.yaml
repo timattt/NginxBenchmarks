@@ -1,0 +1,45 @@
+version: '3'
+
+services:
+  nginx:
+    container_name: nginx
+    image: nginx:latest
+    restart: no
+    ports:
+      - "80:80"
+    volumes:
+      - ./../nginx/nginx.conf:/etc/nginx/nginx.conf
+    networks:
+      - app-internal
+      - app-external
+    depends_on:
+      benchmark-replica-1:
+        condition: service_started
+      benchmark-replica-2:
+        condition: service_started
+
+  benchmark-replica-1:
+    container_name: benchmark-replica-1
+    build:
+      context: ./../../.
+      dockerfile: Dockerfile
+    networks:
+      - app-internal
+    environment:
+      MAX_SERVLET_THREADS: 1
+
+  benchmark-replica-2:
+    container_name: benchmark-replica-2
+    build:
+      context: ./../../.
+      dockerfile: Dockerfile
+    networks:
+      - app-internal
+    environment:
+      MAX_SERVLET_THREADS: 1
+
+networks:
+  app-internal:
+    internal: true
+  app-external:
+
